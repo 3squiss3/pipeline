@@ -82,7 +82,7 @@ jobs:
           docker compose -p pipelines exec -T airflow python /opt/airflow/scripts/00_seed.py
           docker compose -p pipelines exec -T airflow python /opt/airflow/scripts/00b_generate_prices.py 60
           docker compose -p pipelines exec -T airflow python /opt/airflow/scripts/02_pipeline2_publish.py
-          docker compose -p pipelines run --rm -T spark spark-submit /opt/spark-app/jobs/03_pipeline3_metrics_spark.py
+          docker compose -p pipelines run --rm -T spark /opt/spark/bin/spark-submit /opt/spark-app/jobs/03_pipeline3_metrics_spark.py
 
       - name: Assert expected counts
         run: |
