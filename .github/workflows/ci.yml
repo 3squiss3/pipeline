@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install lint
+        run: |
+          pip install ruff
+
+      - name: Lint scripts (quick)
+        run: |
+          ruff check scripts spark/jobs dags || true
+
+      - name: Docker build spark image
+        run: docker build -t demo-spark:ci ./spark
+
+      - name: Trivy scan (image)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: demo-spark:ci
+          format: table
+          exit-code: "0"
