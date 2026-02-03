@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports: ["27017:27017"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+    volumes:
+      - mongo_data:/data/db
+
+  airflow-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_db:/var/lib/postgresql/data
+
+  airflow-init:
+    image: apache/airflow:2.9.3
+    depends_on: [airflow-db]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    command: >
+      bash -lc "airflow db migrate &&
+      airflow users create --username admin --password admin --firstname a --lastname a --role Admin --email admin@local || true"
+
+  airflow:
+    image: apache/airflow:2.9.3
+    depends_on: [airflow-db, mongo, airflow-init]
+    ports: ["8080:8080"]
+    environment:
+      PYTHONPATH: "/opt/airflow:/opt/airflow/scripts"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      _PIP_ADDITIONAL_REQUIREMENTS: "pymongo==4.7.2 numpy==2.0.1 pandas==2.2.2 python-dateutil==2.9.0.post0"
+      MONGO_URI: "mongodb://root:rootpass@mongo:27017/?authSource=admin"
+      DB_NAME: "price_demo"
+      ALERT_DROP_PCT: "0.10"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+    command: >
+      bash -lc "airflow webserver & airflow scheduler"
+
+  # Pipeline 1 en continu (quasi temps réel)
+  alerter:
+    image: apache/airflow:2.9.3
+    depends_on: [mongo]
+    environment:
+      PIP_ADDITIONAL_REQUIREMENTS: "pymongo==4.7.2 numpy==2.0.1 pandas==2.2.2"
+      MONGO_URI: "mongodb://root:rootpass@mongo:27017/?authSource=admin"
+      DB_NAME: "price_demo"
+      ALERT_DROP_PCT: "0.10"
+      PYTHONPATH: "/opt/airflow:/opt/airflow/scripts"
+    volumes:
+      - ./scripts:/app/scripts
+    command: >
+      bash -lc "python /app/scripts/01_pipeline1_alert.py --loop 2"
+
+  spark:
+    build: ./spark
+    depends_on: [mongo]
+    environment:
+      MONGO_URI: "mongodb://root:rootpass@mongo:27017/?authSource=admin"
+      DB_NAME: "price_demo"
+      HOME: "/tmp"
+      SPARK_SUBMIT_OPTS: "-Divy.home=/tmp/.ivy2 -Divy.cache.dir=/tmp/.ivy2/cache"
+
+volumes:
+  mongo_data:
+  airflow_db:
