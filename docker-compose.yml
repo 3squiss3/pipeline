@@ -48,12 +48,11 @@ services:
     command: >
       bash -lc "airflow webserver & airflow scheduler"
 
-  # Pipeline 1 en continu (quasi temps réel)
   alerter:
-    image: apache/airflow:2.9.3
+    build: ./airflow
+    image: pipelines-airflow:2.9.3
     depends_on: [mongo]
     environment:
-      PIP_ADDITIONAL_REQUIREMENTS: "pymongo==4.7.2 numpy==2.0.1 pandas==2.2.2"
       MONGO_URI: "mongodb://root:rootpass@mongo:27017/?authSource=admin"
       DB_NAME: "price_demo"
       ALERT_DROP_PCT: "0.10"
