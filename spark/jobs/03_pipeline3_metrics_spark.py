@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, min as smin, expr, stddev_pop, percentile_approx, max as smax
+from pyspark.sql.functions import col, min as smin, expr, stddev_pop, percentile_approx
 
 MONGO_URI = os.environ["MONGO_URI"]
 DB_NAME = os.getenv("DB_NAME","price_demo")
