@@ -12,7 +12,6 @@ with DAG(
     default_args=default_args,
     tags=["demo"],
 ) as dag:
-
     publish = BashOperator(
         task_id="pipeline2_publish",
         bash_command="python /opt/airflow/scripts/02_pipeline2_publish.py",
