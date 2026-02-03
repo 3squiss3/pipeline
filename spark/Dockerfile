@@ -1,4 +1,4 @@
-FROM bitnami/spark:3.5.6
+FROM spark:3.5.6-python3
 USER root
 RUN pip install pymongo numpy pandas
 WORKDIR /opt/spark-app
