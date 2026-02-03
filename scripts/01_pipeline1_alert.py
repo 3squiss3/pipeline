@@ -44,7 +44,6 @@ def run_once():
                 "median_4w": med,
                 "min_12w": min12
             }
-            # unique index => pas d'alerte fantôme si re-run
             try:
                 db.alerts.insert_one(alert)
             except Exception:

@@ -9,7 +9,7 @@ def main():
     now = datetime.utcnow()
     since_7d = now - timedelta(days=7)
 
-    db.product_views.delete_many({})  # démo: rebuild
+    db.product_views.delete_many({})
 
     for p in db.products.find({}, {"_id":0}):
         pid = p["product_id"]
@@ -20,7 +20,6 @@ def main():
         if not ev:
             continue
 
-        # nettoyage (simple)
         cleaned = []
         for e in ev:
             if e.get("currency") != "EUR":
@@ -31,7 +30,6 @@ def main():
         if not cleaned:
             continue
 
-        # dernière offre par vendeur
         latest = {}
         for e in cleaned:
             latest.setdefault(e["merchant"], e)

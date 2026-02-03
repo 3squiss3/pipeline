@@ -19,7 +19,6 @@ def main():
     db.products_curated.create_index("product_id", unique=True)
     db.price_events.create_index([("product_id",1),("ts",-1)])
     db.metrics_snapshot.create_index("product_id", unique=True)
-    # anti “alert fantôme”: une alerte unique par (product, merchant, ts)
     db.alerts.create_index([("product_id",1),("merchant",1),("ts",1)], unique=True)
 
     print("Seed OK (3 produits).")
