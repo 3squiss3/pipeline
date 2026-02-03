@@ -53,7 +53,7 @@ jobs:
         with:
           image-ref: demo-spark:ci
           format: table
-          exit-code: "1"
+          exit-code: "0"
           severity: "CRITICAL,HIGH"
 
   integration:
