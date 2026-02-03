@@ -1,4 +1,6 @@
-import os, time, argparse
+import os
+import time
+import argparse
 from datetime import datetime
 from scripts.db import get_db
 
